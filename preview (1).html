@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Minha Plataforma de Arrecadação</title>
+
+<style>
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #eef2f7;
+}
+
+header {
+    background-color: #2e86de;
+    color: white;
+    padding: 15px;
+    text-align: center;
+}
+
+.container {
+    max-width: 900px;
+    margin: auto;
+    padding: 20px;
+}
+
+.card {
+    background-color: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+button {
+    margin-top: 12px;
+    padding: 12px 18px;
+    background-color: #27ae60;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #1e8449;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 20px;
+    background-color: #ddd;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+.progress {
+    height: 100%;
+    width: 0%;
+    background-color: #27ae60;
+}
+
+.hidden {
+    display: none;
+}
+
+.meta {
+    font-weight: bold;
+    margin-top: 8px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+<h1>💰 Minha Plataforma de Crowdfunding</h1>
+<p>Crie projetos e arrecade dinheiro</p>
+</header>
+
+<div class="container">
+
+<!-- LOGIN -->
+
+<div id="loginCard" class="card">
+
+<h2>Login</h2>
+
+<input type="text" id="usuario"
+placeholder="Digite seu nome">
+
+<button onclick="login()">
+Entrar
+</button>
+
+</div>
+
+<!-- CRIAR PROJETO -->
+
+<div id="projetoCard"
+class="card hidden">
+
+<h2>Criar Projeto</h2>
+
+<input type="text"
+id="titulo"
+placeholder="Título do projeto">
+
+<textarea
+id="descricao"
+placeholder="Descrição do projeto"></textarea>
+
+<input type="number"
+id="meta"
+placeholder="Meta em R$">
+
+<button onclick="criarProjeto()">
+Criar Projeto
+</button>
+
+</div>
+
+<!-- LISTA -->
+
+<div id="listaProjetos"></div>
+
+</div>
+
+<script>
+
+// LOGIN
+
+function login() {
+
+let usuario =
+document.getElementById("usuario").value;
+
+if(usuario === "") {
+
+alert("Digite um nome!");
+return;
+
+}
+
+localStorage.setItem(
+"usuario", usuario);
+
+document
+.getElementById("loginCard")
+.classList.add("hidden");
+
+document
+.getElementById("projetoCard")
+.classList.remove("hidden");
+
+carregarProjetos();
+
+}
+
+// CRIAR PROJETO
+
+function criarProjeto() {
+
+let titulo =
+document.getElementById("titulo").value;
+
+let descricao =
+document.getElementById("descricao").value;
+
+let meta =
+document.getElementById("meta").value;
+
+if(titulo === "" ||
+descricao === "" ||
+meta === "") {
+
+alert("Preencha todos os campos!");
+return;
+
+}
+
+let projetos =
+JSON.parse(
+localStorage.getItem("projetos"))
+|| [];
+
+projetos.push({
+
+titulo: titulo,
+descricao: descricao,
+meta: meta,
+arrecadado: 0
+
+});
+
+localStorage.setItem(
+"projetos",
+JSON.stringify(projetos));
+
+carregarProjetos();
+
+document.getElementById("titulo").value="";
+document.getElementById("descricao").value="";
+document.getElementById("meta").value="";
+
+}
+
+// CARREGAR
+
+function carregarProjetos() {
+
+let lista =
+document.getElementById("listaProjetos");
+
+lista.innerHTML = "";
+
+let projetos =
+JSON.parse(
+localStorage.getItem("projetos"))
+|| [];
+
+projetos.forEach((p, index) => {
+
+let porcentagem =
+(p.arrecadado / p.meta) * 100;
+
+let card =
+document.createElement("div");
+
+card.className="card";
+
+card.innerHTML = `
+
+<h3>${p.titulo}</h3>
+
+<p>${p.descricao}</p>
+
+<div class="meta">
+🎯 Meta: R$ ${p.meta}
+</div>
+
+<div class="meta">
+💰 Arrecadado:
+R$ ${p.arrecadado}
+</div>
+
+<div class="progress-bar">
+<div class="progress"
+style="width:${porcentagem}%">
+</div>
+</div>
+
+<button onclick="doar(${index})">
+Doar R$10
+</button>
+
+`;
+
+lista.appendChild(card);
+
+});
+
+}
+
+// DOAÇÃO
+
+function doar(index) {
+
+let projetos =
+JSON.parse(
+localStorage.getItem("projetos"));
+
+let valor = 10;
+
+// comissão de 5%
+let comissao = valor * 0.05;
+
+projetos[index].arrecadado +=
+(valor - comissao);
+
+localStorage.setItem(
+"projetos",
+JSON.stringify(projetos));
+
+carregarProjetos();
+
+}
+
+// AUTO LOGIN
+
+window.onload = function(){
+
+if(localStorage.getItem("usuario")){
+
+document
+.getElementById("loginCard")
+.classList.add("hidden");
+
+document
+.getElementById("projetoCard")
+.classList.remove("hidden");
+
+carregarProjetos();
+
+}
+
+}
+
+</script>
+
+</body>
+</html>
